@@ -20,7 +20,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
@@ -32,9 +31,6 @@ import org.openbot.utils.Constants;
 import org.openbot.vehicle.UsbConnection;
 import org.openbot.vehicle.Vehicle;
 import timber.log.Timber;
-
-// For a library module, uncomment the following line
-// import org.openbot.controller.ControllerActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -53,14 +49,7 @@ public class MainActivity extends AppCompatActivity {
     vehicle = OpenBotApplication.vehicle;
     bottomNavigationView = findViewById(R.id.bottomNavigationView);
     bottomNavigationView.setSelectedItemId(R.id.home);
-    //    if (vehicle == null) {
-    //      SharedPreferences sharedPreferences =
-    // PreferenceManager.getDefaultSharedPreferences(this);
-    //      int baudRate = Integer.parseInt(sharedPreferences.getString("baud_rate", "115200"));
-    //      vehicle = new Vehicle(this, baudRate);
-    //      vehicle.connectUsb();
     viewModel.setVehicle(vehicle);
-    //    }
 
     localBroadcastReceiver =
         new BroadcastReceiver() {
@@ -78,13 +67,11 @@ public class MainActivity extends AppCompatActivity {
                   Timber.i("USB device attached");
                   break;
 
-                  // Case activated when app is not set to open default when usb is connected
                 case UsbConnection.ACTION_USB_PERMISSION:
                   synchronized (this) {
                     UsbDevice usbDevice = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
                     if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                       if (usbDevice != null) {
-                        // call method to set up device communication
                         if (!vehicle.isUsbConnected()) {
                           vehicle.connectUsb();
                         }
@@ -93,13 +80,14 @@ public class MainActivity extends AppCompatActivity {
                       }
                     }
                   }
-
                   break;
+
                 case UsbManager.ACTION_USB_DEVICE_DETACHED:
                   vehicle.disconnectUsb();
                   viewModel.setUsbStatus(vehicle.isUsbConnected());
                   Timber.i("USB device detached");
                   break;
+
                 case DEVICE_ACTION_DATA_RECEIVED:
                   viewModel.setDeviceData(intent.getStringExtra("data"));
                   break;
@@ -134,6 +122,18 @@ public class MainActivity extends AppCompatActivity {
     NavigationUI.setupWithNavController(toolbar, navController, appBarConfiguration);
     NavigationUI.setupWithNavController(bottomNavigationView, navController);
 
+    // Override bottom nav item selection to handle Chat tab manually
+    bottomNavigationView.setOnItemSelectedListener(item -> {
+      if (item.getItemId() == R.id.navigation_chat) {
+        Intent chatIntent = new Intent(MainActivity.this, ChatActivity.class);
+        startActivity(chatIntent);
+        return true; // handled here
+      } else {
+        // Let Navigation Component handle other tabs
+        return NavigationUI.onNavDestinationSelected(item, navController);
+      }
+    });
+
     navController.addOnDestinationChangedListener(
         (controller, destination, arguments) -> {
           if (destination.getId() == R.id.mainFragment
@@ -148,7 +148,6 @@ public class MainActivity extends AppCompatActivity {
             bottomNavigationView.setVisibility(View.GONE);
           }
 
-          // To update the toolbar icon according to the Fragment.
           Menu menu = toolbar.getMenu();
           if (destination.getId() == R.id.projectsFragment) {
             menu.findItem(R.id.settingsFragment).setVisible(false);
@@ -161,19 +160,11 @@ public class MainActivity extends AppCompatActivity {
             menu.findItem(R.id.settingsFragment).setVisible(true);
           }
         });
-
-    //    if (savedInstanceState == null) {
-    //      // Default to open this when app opens
-    //      Intent intent = new Intent(this, DefaultActivity.class);
-    //      startActivity(intent);
-    //    }
   }
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
-    // Inflate the menu; this adds items to the action bar if it is present.
     getMenuInflater().inflate(R.menu.menu_items, menu);
-    // Get the current destination id.
     int currentDestinationId =
         Objects.requireNonNull(navController.getCurrentDestination()).getId();
     if (currentDestinationId == R.id.projectsFragment) {
@@ -222,7 +213,6 @@ public class MainActivity extends AppCompatActivity {
     bundle.putParcelable(Constants.DATA_CONTINUOUS, event);
     getSupportFragmentManager().setFragmentResult(Constants.KEY_EVENT_CONTINUOUS, bundle);
 
-    // Check that the event came from a game controller
     if ((event.getSource() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
       bundle.putParcelable(Constants.DATA, event);
       getSupportFragmentManager().setFragmentResult(Constants.KEY_EVENT, bundle);
@@ -253,4 +243,4 @@ public class MainActivity extends AppCompatActivity {
   protected void onPause() {
     super.onPause();
   }
-}
+                   }
