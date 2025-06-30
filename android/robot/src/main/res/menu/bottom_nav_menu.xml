@@ -6,7 +6,7 @@
         android:icon="@drawable/ic_home"/>
     <item
     android:id="@+id/navigation_chat"
-    android:icon="@drawable/ic_baseline_menu_24"   <!-- use any existing icon for now -->
+    android:icon="@drawable/ic_baseline_menu_24"
     android:title="Chat" />
     <item
         android:id="@+id/projectsFragment"
