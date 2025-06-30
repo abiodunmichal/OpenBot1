@@ -5,6 +5,10 @@
         android:title="@string/home"
         android:icon="@drawable/ic_home"/>
     <item
+    android:id="@+id/navigation_chat"
+    android:icon="@drawable/ic_baseline_menu_24"   <!-- use any existing icon for now -->
+    android:title="Chat" />
+    <item
         android:id="@+id/projectsFragment"
         android:title="@string/projects"
         android:icon="@drawable/ic_blockly_projects" />
